@@ -22,6 +22,7 @@ public class NewsService {
 
     @WebMethod
     public List<News> findAll() {
+
         return r.findAll();
     }
     @WebMethod

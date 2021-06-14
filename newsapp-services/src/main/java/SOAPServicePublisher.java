@@ -8,3 +8,4 @@ public class SOAPServicePublisher {
                 new NewsService());
     }
 }
+

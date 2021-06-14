@@ -1,6 +1,8 @@
 package controller;
 
 import entity.User;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import service.UserService;
 
 import javax.inject.Inject;
@@ -12,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/user")
+@Api(value = "User Controller")
 public class UserController {
 
     @Inject
@@ -19,6 +22,7 @@ public class UserController {
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Retrieve user by email")
     public Response getUser(@QueryParam("email") String email) {
         User user = userService.findUserByEmail(email);
         if (user != null) {

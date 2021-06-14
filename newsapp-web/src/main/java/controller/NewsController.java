@@ -3,6 +3,8 @@ package controller;
 import dto.NewsDto;
 import dto.mapper.NewsMapper;
 import entity.News;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import service.NewsService;
 
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Path("news")
+@Api(value = "News Controller")
 public class NewsController {
 
     @Inject
@@ -27,6 +30,7 @@ public class NewsController {
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Retrieve all news", notes = "Return some json to the client")
     public Response listNews() {
         List<News> news = newsService.findAll();
         if (!news.isEmpty()) {
@@ -40,6 +44,7 @@ public class NewsController {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Retrieve news by id", notes = "Return some json to the client")
     public Response newsById(@PathParam("id") int id) {
         News news = newsService.findById(id);
         if (news != null) {
@@ -53,6 +58,8 @@ public class NewsController {
 
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Add news to database", notes = "Accepts some json from the client")
     public Response addNews(NewsDto newsDto) {
         if (newsDto == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -69,6 +76,8 @@ public class NewsController {
     @PUT
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Update news by id", notes = "Accepts some json from the client")
     public Response updateNews(@PathParam("id") int id, NewsDto newsToUpdateDto) {
         if (newsToUpdateDto == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -91,6 +100,7 @@ public class NewsController {
     @DELETE
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Delete news by id")
     public Response deleteNews(@PathParam("id") int id) {
         try {
             newsService.deleteById(id);
