@@ -1,9 +1,10 @@
 package dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -12,6 +13,7 @@ public class NewsDto implements Serializable {
     private Integer id;
     private String title;
     private String brief;
-    private LocalDate newsDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private Date newsDate;
     private String content;
 }
