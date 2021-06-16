@@ -9,7 +9,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
 
-
 public abstract class AbstractRepository<T extends MyEntity, ID> {
 
     private Class<T> entityClass;

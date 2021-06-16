@@ -5,6 +5,7 @@ import dto.mapper.NewsMapper;
 import entity.News;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import jms.JmsService;
 import org.slf4j.Logger;
 import service.NewsService;
 
@@ -29,6 +30,9 @@ public class NewsController {
 
     @Inject
     private Logger logger;
+
+    @Inject
+    private JmsService jmsService;
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -68,6 +72,7 @@ public class NewsController {
         }
         try {
             News savedNews = newsService.save(newsMapper.fromDto(newsDto));
+            jmsService.sendMessage(savedNews);
             return Response.status(Response.Status.OK).entity(newsMapper.toDto(savedNews)).build();
         } catch (Exception e) {
             logger.error("Exception: ", e);

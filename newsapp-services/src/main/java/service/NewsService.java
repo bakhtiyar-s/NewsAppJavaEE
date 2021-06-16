@@ -2,20 +2,16 @@ package service;
 
 
 import entity.News;
-
 import repository.NewsRepository;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
-
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-import javax.transaction.Transactional;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
 
 @ApplicationScoped
-@Transactional
 @WebService
 public class NewsService {
 
