@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import service.NewsService;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Path("news")
 @Api(value = "News Controller")
+@RolesAllowed({"ADMIN", "USER"})
 public class NewsController {
 
     @Inject
@@ -101,6 +103,7 @@ public class NewsController {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Delete news by id")
+    @RolesAllowed("ADMIN")
     public Response deleteNews(@PathParam("id") int id) {
         try {
             newsService.deleteById(id);
