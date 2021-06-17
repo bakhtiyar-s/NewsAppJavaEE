@@ -31,19 +31,17 @@ public class NewsController {
     @Inject
     private Logger logger;
 
-    @Inject
-    private JmsService jmsService;
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Retrieve all news", notes = "Return some json to the client")
     public Response listNews() {
-        List<News> news = newsService.findAll();
-        if (!news.isEmpty()) {
+        try {
+            List<News> news = newsService.findAll();
             List<NewsDto> newsDtos = news.stream().map(news1 -> newsMapper.toDto(news1)).collect(Collectors.toList());
             return Response.status(Response.Status.OK).entity(newsDtos).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).entity("No news were found").build();
+        } catch (NotFoundException e){
+            logger.error(e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
 
@@ -52,13 +50,13 @@ public class NewsController {
     @Produces(value = MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Retrieve news by id", notes = "Return some json to the client")
     public Response newsById(@PathParam("id") int id) {
-        News news = newsService.findById(id);
-        if (news != null) {
+        try {
+            News news = newsService.findById(id);
             NewsDto newsDto = newsMapper.toDto(news);
             return Response.status(Response.Status.OK).entity(newsDto).build();
-        } else {
-            logger.error("News with id {} was not found", id);
-            return Response.status(Response.Status.NOT_FOUND).entity("News with id " + id + " was not found").build();
+        } catch (NotFoundException e){
+            logger.error(e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
 
@@ -68,15 +66,14 @@ public class NewsController {
     @ApiOperation(value = "Add news to database", notes = "Accepts some json from the client")
     public Response addNews(NewsDto newsDto) {
         if (newsDto == null) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Request body is empty").build();
         }
         try {
             News savedNews = newsService.save(newsMapper.fromDto(newsDto));
-            jmsService.sendMessage(savedNews);
             return Response.status(Response.Status.OK).entity(newsMapper.toDto(savedNews)).build();
         } catch (Exception e) {
-            logger.error("Exception: ", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            logger.error(e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
 
@@ -87,20 +84,17 @@ public class NewsController {
     @ApiOperation(value = "Update news by id", notes = "Accepts some json from the client")
     public Response updateNews(@PathParam("id") int id, NewsDto newsToUpdateDto) {
         if (newsToUpdateDto == null) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
-        News oldNews = newsService.findById(id);
-        if (oldNews == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity("News with id " + id + " was not found").build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Request body is empty").build();
         }
         try {
-            News newsToUpdate = newsMapper.fromDto(newsToUpdateDto);
-            newsToUpdate.setId(oldNews.getId());
-            newsService.update(newsToUpdate);
+            newsService.update(newsMapper.fromDto(newsToUpdateDto), id);
             return Response.status(Response.Status.OK).build();
+        } catch (NotFoundException e) {
+            logger.error(e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (Exception e) {
-            logger.error("Exception: ", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            logger.error(e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
 
@@ -114,7 +108,7 @@ public class NewsController {
             newsService.deleteById(id);
             return Response.status(Response.Status.OK).build();
         } catch (NotFoundException e) {
-            logger.error("Not Found Exception: ", e);
+            logger.error(e.getMessage());
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
 

@@ -2,10 +2,12 @@ package service;
 
 
 import entity.News;
+import jms.JmsService;
 import repository.NewsRepository;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.ws.rs.NotFoundException;
@@ -18,22 +20,50 @@ public class NewsService {
     @EJB
     private NewsRepository r;
 
-    @WebMethod
-    public List<News> findAll() { return r.findAll(); }
+    @Inject
+    private JmsService jmsService;
 
     @WebMethod
-    public News save(News entity) {
-        return  r.save(entity);
+    public List<News> findAll() throws NotFoundException {
+        List<News> news = r.findAll();
+        if (!news.isEmpty()) {
+            return news;
+        } else {
+            throw new NotFoundException("No news were found");
+        }
     }
 
     @WebMethod
-    public News update(News entity) {
-        return r.update(entity);
+    public News save(News entity) throws Exception {
+        try {
+            News savedNews = r.save(entity);
+            jmsService.sendMessage(savedNews);
+            return savedNews;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
     }
 
     @WebMethod
-    public News findById(Integer id) {
-        return r.findById(id);
+    public News update(News entity, Integer id) throws NotFoundException, Exception {
+        News oldNews = this.findById(id);
+        entity.setId(oldNews.getId());
+        try {
+            return r.update(entity);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+
+    }
+
+    @WebMethod
+    public News findById(Integer id) throws NotFoundException {
+        News news = r.findById(id);
+        if (news != null) {
+            return news;
+        } else {
+            throw new NotFoundException("News with id " + id + " was not found");
+        }
     }
 
     @WebMethod
